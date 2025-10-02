@@ -12,7 +12,7 @@ list_pokemons = {k+1:v for k, v in enumerate(pokemons_list)}
 
 
 @dataclass
-class Pokemon:
+class Pokemon():
     id: int
     name: str
     types: list[str]
@@ -23,7 +23,18 @@ class Pokemon:
     attack_special: int
     defense_special: int
     speed: int
-    evolution_id: Union[int, None]= None
+    evolution_id: Union[int, None] = None
 
 
 app = FastAPI()
+
+@app.get('/total_pokemons')
+def get_total_pokemons() -> dict:
+    return {"total": len(list_pokemons)}
+
+@app.get('/pokemons')
+def get_all_pokemons() -> list[Pokemon]:
+    res = []
+    for id in list_pokemons:
+        res.append(Pokemon(**list_pokemons[id]))
+    return res
