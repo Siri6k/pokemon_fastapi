@@ -2,7 +2,7 @@ import json
 from dataclasses import dataclass
 from typing import Union
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException, Path
 
 
 with open('pokemons.json', 'r') as file:
@@ -38,3 +38,13 @@ def get_all_pokemons() -> list[Pokemon]:
     for id in list_pokemons:
         res.append(Pokemon(**list_pokemons[id]))
     return res
+
+@app.get('/pokemons/{id}')
+def get_pokemon_by_id(id: int = Path(ge=1)) -> Pokemon:
+    if id not in list_pokemons:
+        raise HTTPException(
+            status_code=404, 
+            detail="Ce pokemon n'existe pas"
+            )
+    
+    return Pokemon(**list_pokemons[id])
