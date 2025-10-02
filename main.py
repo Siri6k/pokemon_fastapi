@@ -85,3 +85,75 @@ def delete_pokemon(id: int = Path(ge=1)) -> Pokemon:
     deleted_pokemon = Pokemon(**list_pokemons[id])
     del list_pokemons[id]
     return deleted_pokemon
+
+@app.get("/pokemons/search/")
+def search_pokemons(
+    types: Union[str, None] = None,
+    evo : Union[str, None] = None,
+    totalgt : Union[int, None] = None,
+    totallt : Union[int, None] = None,
+    sortby : Union[str, None] = None,
+    order : Union[str, None] = None,
+)->Union[list[Pokemon], None] :
+    
+    filtered_list = []
+    res = []
+
+    #On filtre les types
+    if types is not None :
+        for pokemon in pokemons_list :
+            if set(types.split(",")).issubset(pokemon["types"]) :
+                filtered_list.append(pokemon)
+
+    #On filtre les evolutions
+    if evo is not None :
+        tmp = filtered_list if filtered_list else pokemons_list
+        new = []
+
+        for pokemon in tmp :
+            if evo == "true" and "evolution_id" in pokemon:
+                new.append(pokemon)
+            if evo == "false" and "evolution_id" not in pokemon:
+                new.append(pokemon)
+
+        filtered_list = new
+
+    #On filtre sur greater than total
+    if totalgt is not None :
+        tmp = filtered_list if filtered_list else pokemons_list
+        new = []
+
+        for pokemon in tmp :
+            if pokemon["total"] > totalgt:
+                new.append(pokemon)
+
+        filtered_list = new
+
+    #On filtre sur less than total
+    if totallt is not None :
+        tmp = filtered_list if filtered_list else pokemons_list
+        new = []
+
+        for pokemon in tmp :
+            if pokemon["total"] < totallt:
+                new.append(pokemon)
+
+        filtered_list = new
+
+    #On gére le tri
+    if sortby is not None and sortby in ["id","name","total"] :
+        filtered_list = filtered_list if filtered_list else pokemons_list
+        sorting_order = False
+        if order == "asc" : sorting_order = False
+        if order == "desc" : sorting_order = True
+
+        filtered_list = sorted(filtered_list, key=lambda d: d[sortby], reverse=sorting_order)
+
+        
+    #Réponse           
+    if filtered_list :
+        for pokemon in filtered_list :
+            res.append(Pokemon(**pokemon))
+        return res
+    
+    raise HTTPException(status_code=404, detail="Aucun Pokemon ne répond aux critères de recherche")
