@@ -1,5 +1,5 @@
 import json
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from typing import Union
 
 from fastapi import FastAPI, HTTPException, Path
@@ -28,6 +28,10 @@ class Pokemon():
 
 app = FastAPI()
 
+
+# Routes
+# GET, POST, PUT, DELETE
+
 @app.get('/total_pokemons')
 def get_total_pokemons() -> dict:
     return {"total": len(list_pokemons)}
@@ -48,3 +52,13 @@ def get_pokemon_by_id(id: int = Path(ge=1)) -> Pokemon:
             )
     
     return Pokemon(**list_pokemons[id])
+
+@app.post('/pokemon/')
+def create_pokemon(pokemon: Pokemon) -> Pokemon:
+    if pokemon.id in list_pokemons:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Un pokemon avec cet ID: ({pokemon.id}) existe déjà"
+        )
+    list_pokemons[pokemon.id] = asdict(pokemon)
+    return Pokemon(**list_pokemons[pokemon.id])
