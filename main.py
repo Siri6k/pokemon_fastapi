@@ -62,3 +62,26 @@ def create_pokemon(pokemon: Pokemon) -> Pokemon:
         )
     list_pokemons[pokemon.id] = asdict(pokemon)
     return Pokemon(**list_pokemons[pokemon.id])
+
+@app.put('/pokemon/{id}')
+def update_pokemon(pokemon: Pokemon, id: int = Path(ge=1)) -> Pokemon:
+    if id not in list_pokemons:
+        raise HTTPException(
+            status_code=404,
+            detail="Le pokemon que vous essayez de modifier n'existe pas"
+        )
+    
+    list_pokemons[pokemon.id] = asdict(pokemon)
+    return Pokemon(**list_pokemons[pokemon.id])
+
+@app.delete('/pokemon/{id}')
+def delete_pokemon(id: int = Path(ge=1)) -> Pokemon:
+    if id not in list_pokemons:
+        raise HTTPException(
+            status_code=404,
+            detail="Le pokemon que vous essayez de supprimer n'existe pas"
+        )
+    
+    deleted_pokemon = Pokemon(**list_pokemons[id])
+    del list_pokemons[id]
+    return deleted_pokemon
