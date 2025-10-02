@@ -1,5 +1,6 @@
 import json
 from dataclasses import asdict, dataclass
+import math
 from typing import Union
 
 from fastapi import FastAPI, HTTPException, Path
@@ -32,12 +33,17 @@ app = FastAPI()
 # Routes
 # GET, POST, PUT, DELETE
 
+@app.get('/')
+async def main():
+    return {"message": "Bienvenue sur l'API Pokemons"}
+
+
 @app.get('/total_pokemons')
-def get_total_pokemons() -> dict:
+async def get_total_pokemons() -> dict:
     return {"total": len(list_pokemons)}
 
 @app.get('/pokemons')
-def get_all_pokemons() -> list[Pokemon]:
+async def get_all_pokemons() -> list[Pokemon]:
     res = []
     for id in list_pokemons:
         res.append(Pokemon(**list_pokemons[id]))
@@ -157,3 +163,21 @@ def search_pokemons(
         return res
     
     raise HTTPException(status_code=404, detail="Aucun Pokemon ne répond aux critères de recherche")
+
+#=====Tous les Pokémons avec la pagination=====
+@app.get("/pokemons/pages/")
+def get_all_pokemons(page: int=1, items: int=10) -> list[Pokemon]:
+
+    items = min(items, 20)
+    max_page = math.ceil(len(list_pokemons) / items)
+    current_page = min(page, max_page)
+    start = (current_page-1)*items
+    stop = start + items if start + items <= len(list_pokemons) else len(list_pokemons)
+    sublist = (list(list_pokemons))[start:stop]
+
+    res = []
+
+    for id in sublist :
+        res.append(Pokemon(**list_pokemons[id]))
+    
+    return res
