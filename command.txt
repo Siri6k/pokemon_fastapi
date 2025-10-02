@@ -1,0 +1,2 @@
+1-lancer l'api
+uvicorn main:app -reload #pour recharger l'api a chaque modification
